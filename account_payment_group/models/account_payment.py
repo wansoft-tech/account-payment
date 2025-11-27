@@ -195,13 +195,16 @@ class AccountPayment(models.Model):
         of lines that are going to be paid
         """
         for rec in self:
-            to_pay_account = rec.payment_group_id.to_pay_move_line_ids.mapped(
-                'account_id')
-            if len(to_pay_account) > 1:
-                raise ValidationError(_(
-                    'To Pay Lines must be of the same account!'))
-            elif len(to_pay_account) == 1:
-                rec.destination_account_id = to_pay_account[0]
+            if rec.payment_group_id:
+                to_pay_accounts = rec.payment_group_id.to_pay_move_line_ids.mapped('account_id').filtered(
+                    lambda a: a.user_type_id.type in ('receivable', 'payable')
+                )
+    
+                if len(to_pay_accounts) == 1:
+                    rec.destination_account_id = to_pay_accounts[0]
+                    continue
+    
+                super(AccountPayment, rec)._compute_destination_account_id()
             else:
                 super(AccountPayment, rec)._compute_destination_account_id()
 
