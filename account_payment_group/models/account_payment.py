@@ -196,9 +196,7 @@ class AccountPayment(models.Model):
         """
         for rec in self:
             if rec.payment_group_id:
-                to_pay_accounts = rec.payment_group_id.to_pay_move_line_ids.mapped('account_id').filtered(
-                    lambda a: a.user_type_id.type in ('receivable', 'payable')
-                )
+                to_pay_accounts = rec.payment_group_id.to_pay_move_line_ids.mapped('account_id')
     
                 if len(to_pay_accounts) == 1:
                     rec.destination_account_id = to_pay_accounts[0]
